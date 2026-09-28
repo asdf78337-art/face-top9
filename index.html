@@ -1,0 +1,1086 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Face TOP 9 Maker</title>
+
+<style>
+  :root {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: #f7f7f8;
+    color: #171717;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+  }
+
+  .wrap {
+    width: min(1100px, 94vw);
+    padding: 32px 0 48px;
+  }
+
+  .card {
+    background: white;
+    border: 1px solid #e5e5e7;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.05);
+  }
+
+  h1 {
+    margin: 0 0 8px;
+    font-size: 30px;
+  }
+
+  h2 {
+    margin: 0;
+  }
+
+  .sub {
+    color: #666;
+    margin-bottom: 24px;
+  }
+
+  .row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  button {
+    border: 0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  .primary {
+    background: #171717;
+    color: #fff;
+  }
+
+  .secondary {
+    background: #eeeef0;
+    color: #222;
+  }
+
+  button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  .meta {
+    color: #666;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+
+  .progress {
+    margin: 18px 0 8px;
+    font-weight: 700;
+  }
+
+  .bar {
+    height: 10px;
+    background: #ececee;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .fill {
+    height: 100%;
+    width: 0;
+    background: #171717;
+    transition: width .2s;
+  }
+
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-top: 24px;
+  }
+
+  .pick {
+    padding: 0;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 18px;
+    overflow: hidden;
+    min-width: 0;
+    transition: .15s;
+  }
+
+  .pick:hover {
+    border-color: #777;
+    transform: translateY(-1px);
+  }
+
+  .pick img {
+    width: 100%;
+    height: min(58vh, 560px);
+    object-fit: contain;
+    display: block;
+    background: #fafafa;
+  }
+
+  .label {
+    padding: 14px 12px;
+    text-align: center;
+    color: #222;
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  .hint {
+    margin: 18px 0 0;
+    color: #777;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .top9 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 20px;
+  }
+
+  .rank {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #f3f3f3;
+    border: 1px solid #e4e4e6;
+  }
+
+  .rank img {
+    width: 100%;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+    display: block;
+  }
+
+  .badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: #fff;
+    color: #111;
+    min-width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    box-shadow: 0 3px 10px rgba(0,0,0,.14);
+  }
+
+  .filename {
+    padding: 10px;
+    font-size: 14px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #333;
+    font-weight: 600;
+  }
+
+  .center {
+    text-align: center;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 30px 0;
+    color: #666;
+  }
+
+  .error {
+    margin-top: 20px;
+    padding: 14px;
+    border-radius: 12px;
+    background: #fff0f0;
+    color: #b00020;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 700px) {
+    .compare {
+      grid-template-columns: 1fr;
+    }
+
+    .pick img {
+      height: 46vh;
+    }
+
+    .top9 {
+      gap: 8px;
+    }
+
+    .wrap {
+      padding-top: 20px;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+  <div class="card">
+
+    <h1>Face TOP 9 Maker</h1>
+
+    <div class="sub">
+      51명의 사진을 비교해서 최종 TOP 9를 만듭니다.
+    </div>
+
+    <!-- SETUP -->
+    <section id="setup">
+
+      <div class="loading" id="loading">
+        51장의 사진을 불러오는 중…
+      </div>
+
+      <div id="count" class="meta center"></div>
+
+      <div id="loadError" class="error hidden"></div>
+
+      <div class="row" style="margin-top:16px;justify-content:center">
+        <button id="start" class="primary" disabled>
+          사진을 불러오는 중…
+        </button>
+      </div>
+
+      <div class="meta center">
+        사진은 서버에 업로드하지 않습니다. GitHub에 저장된 이미지를 브라우저에서 직접 불러옵니다.
+      </div>
+
+    </section>
+
+
+    <!-- GAME -->
+    <section id="game" class="hidden">
+
+      <div class="progress" id="progressText">
+        비교 준비 중…
+      </div>
+
+      <div class="bar">
+        <div class="fill" id="fill"></div>
+      </div>
+
+      <div class="compare">
+
+        <button class="pick" id="leftBtn">
+
+          <img id="leftImg" alt="왼쪽 후보">
+
+          <div class="label" id="leftName">
+            왼쪽 선택
+          </div>
+
+        </button>
+
+
+        <button class="pick" id="rightBtn">
+
+          <img id="rightImg" alt="오른쪽 후보">
+
+          <div class="label" id="rightName">
+            오른쪽 선택
+          </div>
+
+        </button>
+
+      </div>
+
+      <div class="hint">
+        더 좋아하는 사진을 클릭하세요.
+      </div>
+
+    </section>
+
+
+    <!-- RESULT -->
+    <section id="result" class="hidden">
+
+      <div class="center">
+
+        <h2>TOP 9</h2>
+
+        <div class="meta" id="resultMeta"></div>
+
+      </div>
+
+      <div class="top9" id="top9"></div>
+
+      <div class="row" style="margin-top:20px;justify-content:center">
+
+        <button class="primary" id="download">
+          TOP 9 이미지 저장
+        </button>
+
+        <button class="secondary" id="again">
+          다시 하기
+        </button>
+
+      </div>
+
+    </section>
+
+  </div>
+</div>
+
+
+<script>
+(() => {
+
+  /* =========================================================
+     1. GitHub images 폴더에 들어 있는 51개 파일
+     ========================================================= */
+
+  const imageFiles = [
+    "고토 마키.jpg",
+    "나카자와 유코.webp",
+    "노나카 미키.webp",
+    "니이가키 리사.jpg",
+    "다나카 레이나.jpg",
+    "다카하시 아이.webp",
+    "링링.jpg",
+    "마키노 마리아.webp",
+    "모리토 치사키.webp",
+    "미츠이 아이카.webp",
+    "미치시게 사유미.jpg",
+    "사야시 리호.webp",
+    "사쿠라이 리오.webp",
+    "사토 마사키.webp",
+    "스기하라 메이사.webp",
+    "스즈키 모아.webp",
+    "스즈키 카논.webp",
+    "아베 나츠미.webp",
+    "야구치 마리.jpg",
+    "야마자키 메이.webp",
+    "야스다 미유.webp",
+    "야스다 케이.webp",
+    "오가와 마코토.webp",
+    "오가타 하루나.webp",
+    "오다 사쿠라.webp",
+    "오카무라 호마레.webp",
+    "요시자와 히토미.jpg",
+    "요코야마 레이나.webp",
+    "유미게타 아코.webp",
+    "이노우에 하루카.webp",
+    "이시구로 아야.webp",
+    "이시다 아유미.webp",
+    "이시카와 리카.webp",
+    "이시카와 하나노.webp",
+    "이이다 카오리.webp",
+    "이이쿠보 하루나.webp",
+    "이치이 사야카.webp",
+    "이쿠타 에리나.jpg",
+    "쥰쥰.jpg",
+    "츠지 노조미.webp",
+    "카가 카에데.webp",
+    "카고 아이.webp",
+    "카메이 에리.webp",
+    "콘노 아사미.webp",
+    "쿠도 하루카.webp",
+    "쿠스미 코하루.jpg",
+    "키타가와 리오.webp",
+    "하가 아카네.webp",
+    "후지모토 미키.webp",
+    "후쿠다 아스카.webp",
+    "후쿠무라 미즈키.webp"
+  ];
+
+
+  /* =========================================================
+     2. HTML 요소
+     ========================================================= */
+
+  const $ = id => document.getElementById(id);
+
+  const setup = $("setup");
+  const game = $("game");
+  const result = $("result");
+
+  const loading = $("loading");
+  const countEl = $("count");
+  const loadError = $("loadError");
+  const startBtn = $("start");
+
+  const leftImg = $("leftImg");
+  const rightImg = $("rightImg");
+
+  const leftName = $("leftName");
+  const rightName = $("rightName");
+
+  const leftBtn = $("leftBtn");
+  const rightBtn = $("rightBtn");
+
+  const progressText = $("progressText");
+  const fill = $("fill");
+
+  const top9 = $("top9");
+  const resultMeta = $("resultMeta");
+
+  const downloadBtn = $("download");
+  const againBtn = $("again");
+
+
+  /* =========================================================
+     3. 이미지 경로 / 이름 생성
+     ========================================================= */
+
+  function getName(filename) {
+
+    // 확장자를 제거해서 사람 이름만 가져옴
+    return filename.replace(/\.[^.]+$/, "");
+
+  }
+
+
+  function getImageURL(filename) {
+
+    // 한글 / 공백이 들어간 파일명을 URL에 맞게 변환
+    return "images/" + encodeURIComponent(filename);
+
+  }
+
+
+  let items = imageFiles.map(file => ({
+    name: getName(file),
+    file: file,
+    src: getImageURL(file)
+  }));
+
+
+  /* =========================================================
+     4. 이미지가 실제로 존재하는지 확인
+     ========================================================= */
+
+  async function checkImage(item) {
+
+    return new Promise(resolve => {
+
+      const img = new Image();
+
+      img.onload = () => {
+        resolve(true);
+      };
+
+      img.onerror = () => {
+        resolve(false);
+      };
+
+      img.src = item.src;
+
+    });
+
+  }
+
+
+  async function loadImages() {
+
+    loading.textContent = "51장의 사진을 확인하는 중…";
+
+    const results = await Promise.all(
+      items.map(async item => ({
+        item: item,
+        ok: await checkImage(item)
+      }))
+    );
+
+    const failed = results
+      .filter(result => !result.ok)
+      .map(result => result.item.file);
+
+
+    if (failed.length > 0) {
+
+      loadError.classList.remove("hidden");
+
+      loadError.innerHTML =
+        "<strong>불러오지 못한 이미지가 있습니다.</strong><br><br>" +
+        failed.join("<br>") +
+        "<br><br>" +
+        "GitHub의 images 폴더에 파일명이 정확히 일치하는지 확인해주세요.";
+
+      loading.textContent = "이미지를 불러오지 못했습니다.";
+      startBtn.disabled = true;
+
+      return;
+
+    }
+
+
+    loading.textContent = "사진 51장 로딩 완료";
+
+    countEl.textContent =
+      `${items.length}명의 사진이 준비되었습니다.`;
+
+    startBtn.textContent = "TOP 9 시작";
+    startBtn.disabled = false;
+
+  }
+
+
+  /* =========================================================
+     5. 비교 상태
+     ========================================================= */
+
+  let comparisons = 0;
+
+  let maxEstimate = 0;
+
+  let lastTop9 = [];
+
+
+  function updateProgress() {
+
+    progressText.textContent =
+      `비교 ${comparisons}회`;
+
+    if (maxEstimate > 0) {
+
+      const percent =
+        Math.min(100, (comparisons / maxEstimate) * 100);
+
+      fill.style.width = percent + "%";
+
+    }
+
+  }
+
+
+  /* =========================================================
+     6. 두 사진 비교
+     ========================================================= */
+
+  function askPair(a, b) {
+
+    return new Promise(resolve => {
+
+      leftImg.src = a.src;
+      rightImg.src = b.src;
+
+      leftName.textContent = a.name;
+      rightName.textContent = b.name;
+
+      leftBtn.disabled = false;
+      rightBtn.disabled = false;
+
+
+      const choose = chooseLeft => {
+
+        leftBtn.disabled = true;
+        rightBtn.disabled = true;
+
+        comparisons++;
+
+        updateProgress();
+
+        resolve(chooseLeft);
+
+      };
+
+
+      leftBtn.onclick = () => {
+        choose(true);
+      };
+
+
+      rightBtn.onclick = () => {
+        choose(false);
+      };
+
+    });
+
+  }
+
+
+  /* =========================================================
+     7. TOP 9 선별 알고리즘
+
+     전체 51명의 완전한 순위를 만들지 않습니다.
+
+     먼저 9명을 정렬한 뒤,
+     나머지 42명을 하나씩 TOP 9에 넣을지 비교합니다.
+
+     따라서 51명 전체를 무식하게 전부 비교하는 방식보다
+     필요한 비교만 수행합니다.
+     ========================================================= */
+
+  async function sortInitialNine(arr) {
+
+    const sorted = [];
+
+    for (const item of arr) {
+
+      let low = 0;
+      let high = sorted.length;
+
+      while (low < high) {
+
+        const mid = Math.floor((low + high) / 2);
+
+        const chooseItem = await askPair(item, sorted[mid]);
+
+        if (chooseItem) {
+
+          // item이 sorted[mid]보다 위
+          high = mid;
+
+        } else {
+
+          // item이 sorted[mid]보다 아래
+          low = mid + 1;
+
+        }
+
+      }
+
+      sorted.splice(low, 0, item);
+
+    }
+
+    return sorted;
+
+  }
+
+
+  async function insertIntoTop9(top, item) {
+
+    /*
+      이미 TOP 9가 순서대로 정렬되어 있다고 가정.
+
+      먼저 9위보다 못한지 확인.
+      9위보다 좋으면 이진 탐색으로 위치를 찾습니다.
+    */
+
+    if (top.length === 9) {
+
+      const betterThanLast =
+        await askPair(item, top[8]);
+
+      if (!betterThanLast) {
+
+        // 9위보다 아래 → TOP 9에 들어가지 않음
+        return top;
+
+      }
+
+      comparisons++;
+
+      updateProgress();
+
+    }
+
+
+    let low = 0;
+    let high = Math.min(top.length, 8);
+
+
+    while (low < high) {
+
+      const mid = Math.floor((low + high) / 2);
+
+      const chooseItem =
+        await askPair(item, top[mid]);
+
+      if (chooseItem) {
+
+        high = mid;
+
+      } else {
+
+        low = mid + 1;
+
+      }
+
+    }
+
+
+    top.splice(low, 0, item);
+
+
+    if (top.length > 9) {
+      top.pop();
+    }
+
+
+    return top;
+
+  }
+
+
+  /* =========================================================
+     8. 비교 시작
+     ========================================================= */
+
+  async function begin() {
+
+    comparisons = 0;
+
+    maxEstimate = 200;
+
+    updateProgress();
+
+    setup.classList.add("hidden");
+    result.classList.add("hidden");
+    game.classList.remove("hidden");
+
+
+    /*
+      비교 순서를 매번 섞습니다.
+
+      따라서 매번 같은 사람이 같은 위치에서
+      시작하지 않습니다.
+    */
+
+    const shuffled = [...items]
+      .sort(() => Math.random() - 0.5);
+
+
+    /*
+      처음 9명을 정렬
+    */
+
+    let top = await sortInitialNine(
+      shuffled.slice(0, 9)
+    );
+
+
+    /*
+      나머지 42명을 차례대로 TOP 9에 넣습니다.
+    */
+
+    for (let i = 9; i < shuffled.length; i++) {
+
+      top = await insertIntoTop9(
+        top,
+        shuffled[i]
+      );
+
+    }
+
+
+    /*
+      최종 결과
+    */
+
+    showResult(top);
+
+  }
+
+
+  /* =========================================================
+     9. TOP 9 결과 표시
+     ========================================================= */
+
+  function showResult(top) {
+
+    lastTop9 = top.slice(0, 9);
+
+    game.classList.add("hidden");
+    result.classList.remove("hidden");
+
+    resultMeta.textContent =
+      `${items.length}명 비교 완료 · 총 ${comparisons}회 선택`;
+
+    top9.innerHTML = "";
+
+
+    lastTop9.forEach((item, index) => {
+
+      const card =
+        document.createElement("div");
+
+      card.className = "rank";
+
+
+      const img =
+        document.createElement("img");
+
+      img.src = item.src;
+      img.alt = `${index + 1}위 ${item.name}`;
+
+
+      const badge =
+        document.createElement("div");
+
+      badge.className = "badge";
+      badge.textContent = index + 1;
+
+
+      const name =
+        document.createElement("div");
+
+      name.className = "filename";
+      name.textContent = item.name;
+
+
+      card.appendChild(img);
+      card.appendChild(badge);
+      card.appendChild(name);
+
+      top9.appendChild(card);
+
+    });
+
+  }
+
+
+  /* =========================================================
+     10. TOP 9 이미지 저장
+     ========================================================= */
+
+  downloadBtn.addEventListener("click", async () => {
+
+    const size = 1200;
+    const margin = 35;
+    const gap = 20;
+    const header = 90;
+
+    const cell =
+      (size - margin * 2 - gap * 2) / 3;
+
+    const canvas =
+      document.createElement("canvas");
+
+    canvas.width = size;
+
+    canvas.height =
+      header +
+      margin * 2 +
+      cell * 3 +
+      gap * 2;
+
+
+    const ctx =
+      canvas.getContext("2d");
+
+
+    /*
+      흰 배경
+    */
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+
+    /*
+      제목
+    */
+
+    ctx.fillStyle = "#111111";
+
+    ctx.font =
+      "700 42px system-ui, sans-serif";
+
+    ctx.fillText(
+      "TOP 9",
+      margin,
+      58
+    );
+
+
+    /*
+      9장 출력
+    */
+
+    for (
+      let i = 0;
+      i < lastTop9.length;
+      i++
+    ) {
+
+      const x =
+        margin +
+        (i % 3) * (cell + gap);
+
+      const y =
+        header +
+        margin +
+        Math.floor(i / 3) * (cell + gap);
+
+
+      const img =
+        new Image();
+
+      img.src =
+        lastTop9[i].src;
+
+
+      await img.decode();
+
+
+      /*
+        정사각형으로 중앙 crop
+      */
+
+      const side =
+        Math.min(
+          img.naturalWidth,
+          img.naturalHeight
+        );
+
+
+      const sx =
+        (img.naturalWidth - side) / 2;
+
+      const sy =
+        (img.naturalHeight - side) / 2;
+
+
+      ctx.drawImage(
+        img,
+        sx,
+        sy,
+        side,
+        side,
+        x,
+        y,
+        cell,
+        cell
+      );
+
+
+      /*
+        순위 표시
+      */
+
+      ctx.fillStyle = "#ffffff";
+
+      ctx.fillRect(
+        x + 12,
+        y + 12,
+        55,
+        55
+      );
+
+
+      ctx.fillStyle = "#111111";
+
+      ctx.font =
+        "800 30px system-ui, sans-serif";
+
+      ctx.fillText(
+        String(i + 1),
+        x + 30,
+        y + 51
+      );
+
+
+      /*
+        이름 표시
+      */
+
+      ctx.fillStyle = "#ffffff";
+
+      ctx.fillRect(
+        x,
+        y + cell - 48,
+        cell,
+        48
+      );
+
+
+      ctx.fillStyle = "#111111";
+
+      ctx.font =
+        "700 22px system-ui, sans-serif";
+
+      ctx.fillText(
+        lastTop9[i].name,
+        x + 14,
+        y + cell - 17
+      );
+
+    }
+
+
+    /*
+      다운로드
+    */
+
+    const link =
+      document.createElement("a");
+
+    link.download = "TOP9.png";
+
+    link.href =
+      canvas.toDataURL("image/png");
+
+    link.click();
+
+  });
+
+
+  /* =========================================================
+     11. 다시 하기
+     ========================================================= */
+
+  againBtn.addEventListener("click", () => {
+
+    comparisons = 0;
+    lastTop9 = [];
+
+    result.classList.add("hidden");
+    setup.classList.remove("hidden");
+
+    startBtn.disabled = false;
+    startBtn.textContent = "TOP 9 시작";
+
+    fill.style.width = "0%";
+
+  });
+
+
+  /* =========================================================
+     12. 시작 버튼
+     ========================================================= */
+
+  startBtn.addEventListener(
+    "click",
+    begin
+  );
+
+
+  /* =========================================================
+     13. 페이지가 열리면 51장 자동 확인
+     ========================================================= */
+
+  loadImages();
+
+})();
+</script>
+
+</body>
+</html>
